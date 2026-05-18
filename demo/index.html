@@ -1,0 +1,787 @@
+<!DOCTYPE html>
+<html lang="en">
+<head>
+  <meta charset="UTF-8" />
+  <meta name="viewport" content="width=device-width, initial-scale=1.0" />
+  <title>Mzaar Bike App — Investor Demo</title>
+  <link href="https://fonts.googleapis.com/css2?family=Inter:wght@300;400;500;600;700;800;900&display=swap" rel="stylesheet" />
+  <script src="https://cdn.tailwindcss.com"></script>
+  <script>
+    tailwind.config = {
+      theme: {
+        extend: {
+          colors: {
+            bg: '#0a0f1a',
+            surface: '#111827',
+            card: '#0d1424',
+            accent: '#22c55e',
+            trail: { green: '#2ECC40', blue: '#3b82f6', black: '#374151' }
+          },
+          fontFamily: { sans: ['Inter', 'sans-serif'] }
+        }
+      }
+    }
+  </script>
+  <style>
+    * { box-sizing: border-box; }
+    html { scroll-behavior: smooth; }
+    body { background: #0a0f1a; color: #f9fafb; font-family: 'Inter', sans-serif; overflow-x: hidden; }
+
+    /* Reveal animations */
+    .reveal { opacity: 0; transform: translateY(40px); transition: opacity 0.7s ease, transform 0.7s ease; }
+    .reveal.visible { opacity: 1; transform: translateY(0); }
+    .reveal-left { opacity: 0; transform: translateX(-50px); transition: opacity 0.7s ease, transform 0.7s ease; }
+    .reveal-left.visible { opacity: 1; transform: translateX(0); }
+    .reveal-right { opacity: 0; transform: translateX(50px); transition: opacity 0.7s ease, transform 0.7s ease; }
+    .reveal-right.visible { opacity: 1; transform: translateX(0); }
+    .delay-1 { transition-delay: 0.1s; }
+    .delay-2 { transition-delay: 0.2s; }
+    .delay-3 { transition-delay: 0.3s; }
+    .delay-4 { transition-delay: 0.4s; }
+    .delay-5 { transition-delay: 0.5s; }
+
+    /* Glassmorphism */
+    .glass {
+      background: rgba(255,255,255,0.04);
+      border: 1px solid rgba(255,255,255,0.08);
+      backdrop-filter: blur(12px);
+    }
+    .glass-strong {
+      background: rgba(255,255,255,0.06);
+      border: 1px solid rgba(255,255,255,0.12);
+      backdrop-filter: blur(20px);
+    }
+
+    /* Hero gradient */
+    .hero-bg {
+      background: radial-gradient(ellipse at 60% 0%, rgba(34,197,94,0.15) 0%, transparent 60%),
+                  radial-gradient(ellipse at 10% 80%, rgba(59,130,246,0.1) 0%, transparent 50%),
+                  #0a0f1a;
+    }
+
+    /* Gradient text */
+    .grad-text {
+      background: linear-gradient(135deg, #22c55e 0%, #3b82f6 100%);
+      -webkit-background-clip: text;
+      -webkit-text-fill-color: transparent;
+      background-clip: text;
+    }
+
+    /* Navbar */
+    nav { position: fixed; top: 0; left: 0; right: 0; z-index: 100; }
+
+    /* Phone mockup */
+    .phone {
+      width: 220px;
+      height: 440px;
+      background: #0d1424;
+      border-radius: 36px;
+      border: 2px solid rgba(255,255,255,0.15);
+      overflow: hidden;
+      position: relative;
+      box-shadow: 0 40px 80px rgba(0,0,0,0.6), inset 0 0 0 1px rgba(255,255,255,0.05);
+    }
+    .phone::before {
+      content: '';
+      position: absolute;
+      top: 12px; left: 50%; transform: translateX(-50%);
+      width: 60px; height: 6px;
+      background: rgba(255,255,255,0.2);
+      border-radius: 3px;
+      z-index: 10;
+    }
+
+    /* Map mockup */
+    .map-bg {
+      background:
+        linear-gradient(rgba(10,15,26,0.3), rgba(10,15,26,0.3)),
+        repeating-linear-gradient(0deg, transparent, transparent 30px, rgba(255,255,255,0.02) 30px, rgba(255,255,255,0.02) 31px),
+        repeating-linear-gradient(90deg, transparent, transparent 30px, rgba(255,255,255,0.02) 30px, rgba(255,255,255,0.02) 31px),
+        #0d2a1a;
+    }
+
+    /* Trail line animation */
+    .trail-line {
+      stroke-dasharray: 300;
+      stroke-dashoffset: 300;
+      animation: drawLine 2.5s ease forwards;
+    }
+    .trail-line-2 {
+      stroke-dasharray: 250;
+      stroke-dashoffset: 250;
+      animation: drawLine 2.5s ease 0.4s forwards;
+    }
+    .trail-line-3 {
+      stroke-dasharray: 200;
+      stroke-dashoffset: 200;
+      animation: drawLine 2.5s ease 0.8s forwards;
+    }
+    @keyframes drawLine {
+      to { stroke-dashoffset: 0; }
+    }
+
+    /* Pulse dot */
+    @keyframes pulse-dot {
+      0%, 100% { transform: scale(1); opacity: 1; }
+      50% { transform: scale(1.4); opacity: 0.7; }
+    }
+    .pulse-dot { animation: pulse-dot 2s ease-in-out infinite; }
+
+    /* Status badge pulse */
+    @keyframes badge-pulse {
+      0%, 100% { box-shadow: 0 0 0 0 rgba(34,197,94,0.4); }
+      50% { box-shadow: 0 0 0 6px rgba(34,197,94,0); }
+    }
+    .badge-pulse { animation: badge-pulse 2s infinite; }
+
+    /* QR scan animation */
+    @keyframes scanLine {
+      0% { top: 10%; }
+      100% { top: 90%; }
+    }
+    .scan-line {
+      animation: scanLine 2s ease-in-out infinite alternate;
+    }
+
+    /* QR pin drop */
+    @keyframes pinDrop {
+      0% { transform: translateY(-30px) scale(0); opacity: 0; }
+      60% { transform: translateY(4px) scale(1.1); opacity: 1; }
+      100% { transform: translateY(0) scale(1); opacity: 1; }
+    }
+    .pin-drop { animation: pinDrop 0.6s ease 1.5s both; }
+
+    /* Floating animation */
+    @keyframes float {
+      0%, 100% { transform: translateY(0); }
+      50% { transform: translateY(-12px); }
+    }
+    .float { animation: float 6s ease-in-out infinite; }
+
+    /* Glow */
+    .glow-green { box-shadow: 0 0 30px rgba(34,197,94,0.2); }
+    .glow-blue { box-shadow: 0 0 30px rgba(59,130,246,0.2); }
+
+    /* Section divider */
+    .section-divider {
+      background: linear-gradient(90deg, transparent, rgba(34,197,94,0.3), transparent);
+      height: 1px;
+    }
+
+    /* Stat number animation */
+    .stat-num { font-variant-numeric: tabular-nums; }
+
+    /* Scrollbar */
+    ::-webkit-scrollbar { width: 4px; }
+    ::-webkit-scrollbar-track { background: #0a0f1a; }
+    ::-webkit-scrollbar-thumb { background: #22c55e44; border-radius: 2px; }
+
+    /* Nav link active */
+    .nav-link { position: relative; }
+    .nav-link::after {
+      content: '';
+      position: absolute;
+      bottom: -2px; left: 0; right: 0;
+      height: 2px;
+      background: #22c55e;
+      transform: scaleX(0);
+      transition: transform 0.3s ease;
+    }
+    .nav-link:hover::after { transform: scaleX(1); }
+
+    /* Feature card hover */
+    .feat-card {
+      transition: transform 0.3s ease, border-color 0.3s ease, box-shadow 0.3s ease;
+    }
+    .feat-card:hover {
+      transform: translateY(-4px);
+      border-color: rgba(34,197,94,0.3);
+      box-shadow: 0 20px 40px rgba(0,0,0,0.4), 0 0 20px rgba(34,197,94,0.05);
+    }
+
+    /* Coming soon card */
+    .soon-card {
+      transition: transform 0.3s ease, border-color 0.3s ease;
+    }
+    .soon-card:hover {
+      transform: translateY(-6px);
+      border-color: rgba(59,130,246,0.4);
+    }
+  </style>
+</head>
+<body>
+
+<!-- NAVBAR -->
+<nav class="glass border-b border-white/5">
+  <div class="max-w-6xl mx-auto px-6 flex items-center justify-between h-14">
+    <div class="flex items-center gap-2">
+      <div class="w-7 h-7 rounded-lg bg-gradient-to-br from-accent to-blue-500 flex items-center justify-center">
+        <svg width="14" height="14" viewBox="0 0 24 24" fill="none" stroke="white" stroke-width="2.5"><circle cx="12" cy="12" r="10"/><path d="M12 8v4l3 3"/></svg>
+      </div>
+      <span class="font-bold text-sm tracking-wide">MZAAR</span>
+    </div>
+    <div class="hidden md:flex items-center gap-6 text-xs text-gray-400 font-medium">
+      <a href="#features" class="nav-link hover:text-white transition-colors">Features</a>
+      <a href="#coming-soon" class="nav-link hover:text-white transition-colors">Roadmap</a>
+      <a href="#tech" class="nav-link hover:text-white transition-colors">Tech</a>
+      <a href="#contact" class="nav-link hover:text-white transition-colors">Contact</a>
+    </div>
+    <a href="#contact" class="text-xs font-semibold px-4 py-1.5 rounded-full bg-accent text-black hover:bg-green-400 transition-colors">Get in Touch</a>
+  </div>
+</nav>
+
+<!-- HERO -->
+<section class="hero-bg min-h-screen flex flex-col items-center justify-center text-center px-6 pt-14 relative overflow-hidden">
+
+  <!-- Background orbs -->
+  <div class="absolute top-1/4 left-1/4 w-96 h-96 bg-green-500/5 rounded-full blur-3xl pointer-events-none"></div>
+  <div class="absolute bottom-1/4 right-1/4 w-80 h-80 bg-blue-500/5 rounded-full blur-3xl pointer-events-none"></div>
+
+  <!-- Mountain silhouette -->
+  <svg class="absolute bottom-0 left-0 right-0 w-full opacity-10" viewBox="0 0 1440 200" preserveAspectRatio="none">
+    <path d="M0,200 L0,120 L180,40 L360,100 L540,20 L720,80 L900,10 L1080,60 L1260,30 L1440,70 L1440,200 Z" fill="#22c55e"/>
+  </svg>
+
+  <div class="relative z-10 max-w-4xl mx-auto">
+    <!-- Badge -->
+    <div class="reveal inline-flex items-center gap-2 px-3 py-1 rounded-full glass text-xs text-green-400 font-medium mb-6 border border-green-500/20">
+      <span class="w-1.5 h-1.5 rounded-full bg-green-400 badge-pulse"></span>
+      Mountain Resort — Summer 2026
+    </div>
+
+    <h1 class="reveal delay-1 text-5xl md:text-7xl font-black leading-tight mb-4">
+      Your Mountain,<br/>
+      <span class="grad-text">Always Open.</span>
+    </h1>
+
+    <p class="reveal delay-2 text-lg text-gray-400 max-w-2xl mx-auto mb-10 leading-relaxed">
+      A native mobile companion app for guests at Mzaar resort — interactive trail maps, live status updates, and instant QR-based location finding.
+    </p>
+
+    <div class="reveal delay-3 flex flex-col sm:flex-row items-center justify-center gap-4">
+      <a href="#features" class="px-8 py-3 rounded-full bg-accent text-black font-bold text-sm hover:bg-green-400 transition-all hover:scale-105 active:scale-95 glow-green">
+        Explore Features
+      </a>
+      <a href="#tech" class="px-8 py-3 rounded-full glass text-white font-semibold text-sm hover:bg-white/10 transition-all border border-white/10">
+        View Tech Stack
+      </a>
+    </div>
+
+    <!-- Stats row -->
+    <div class="reveal delay-4 flex items-center justify-center gap-8 mt-16 pt-8 border-t border-white/5">
+      <div class="text-center">
+        <div class="text-3xl font-black text-white">3</div>
+        <div class="text-xs text-gray-500 mt-1">Core MVP Features</div>
+      </div>
+      <div class="w-px h-10 bg-white/10"></div>
+      <div class="text-center">
+        <div class="text-3xl font-black text-white">2</div>
+        <div class="text-xs text-gray-500 mt-1">Platforms (iOS & Android)</div>
+      </div>
+      <div class="w-px h-10 bg-white/10"></div>
+      <div class="text-center">
+        <div class="text-3xl font-black grad-text">$0</div>
+        <div class="text-xs text-gray-500 mt-1">Monthly Server Costs</div>
+      </div>
+    </div>
+  </div>
+
+  <!-- Scroll indicator -->
+  <div class="absolute bottom-8 left-1/2 -translate-x-1/2 flex flex-col items-center gap-2 text-gray-600 text-xs">
+    <span>Scroll</span>
+    <svg width="16" height="16" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2" class="animate-bounce">
+      <path d="M12 5v14M5 12l7 7 7-7"/>
+    </svg>
+  </div>
+</section>
+
+<!-- FEATURES SECTION -->
+<section id="features" class="py-32 px-6 max-w-6xl mx-auto">
+
+  <div class="text-center mb-20">
+    <div class="reveal inline-flex items-center gap-2 px-3 py-1 rounded-full glass text-xs text-green-400 font-medium mb-4 border border-green-500/20">
+      MVP Features
+    </div>
+    <h2 class="reveal delay-1 text-4xl md:text-5xl font-black mb-4">Built for the mountain.<br/><span class="grad-text">Designed for guests.</span></h2>
+    <p class="reveal delay-2 text-gray-400 max-w-xl mx-auto">Three core features that solve real problems guests face on the mountain today.</p>
+  </div>
+
+  <!-- FEATURE 1: TRAIL MAP -->
+  <div class="feat-card glass rounded-3xl p-8 md:p-12 mb-8 border border-white/5">
+    <div class="flex flex-col md:flex-row items-center gap-10">
+      <!-- Text -->
+      <div class="flex-1 reveal-left">
+        <div class="inline-flex items-center gap-2 px-3 py-1 rounded-full bg-green-500/10 text-green-400 text-xs font-semibold mb-4 border border-green-500/20">
+          Feature 01
+        </div>
+        <h3 class="text-3xl font-black mb-4">Interactive Trail Map</h3>
+        <p class="text-gray-400 leading-relaxed mb-6">Full-screen Mapbox map showing every trail color-coded by difficulty. Guests can filter by biking or hiking, tap any trail for details, and download for offline use — no signal required.</p>
+        <div class="space-y-3">
+          <div class="flex items-center gap-3 text-sm">
+            <span class="w-3 h-3 rounded-full flex-shrink-0" style="background:#2ECC40"></span>
+            <span class="text-gray-300">Green — Beginner trails</span>
+          </div>
+          <div class="flex items-center gap-3 text-sm">
+            <span class="w-3 h-3 rounded-full flex-shrink-0" style="background:#3b82f6"></span>
+            <span class="text-gray-300">Blue — Intermediate trails</span>
+          </div>
+          <div class="flex items-center gap-3 text-sm">
+            <span class="w-3 h-3 rounded-full flex-shrink-0 bg-gray-600"></span>
+            <span class="text-gray-300">Black — Expert trails</span>
+          </div>
+        </div>
+        <div class="flex items-center gap-2 mt-6">
+          <span class="px-2 py-0.5 rounded bg-green-500/10 text-green-400 text-xs font-medium border border-green-500/20">Works Offline</span>
+          <span class="px-2 py-0.5 rounded bg-blue-500/10 text-blue-400 text-xs font-medium border border-blue-500/20">iOS & Android</span>
+        </div>
+      </div>
+
+      <!-- Phone mockup -->
+      <div class="reveal-right flex justify-center">
+        <div class="float">
+          <div class="phone">
+            <!-- Map screen -->
+            <div class="map-bg w-full h-full relative pt-6">
+              <!-- Trail SVG -->
+              <svg class="absolute inset-0 w-full h-full" viewBox="0 0 220 440" fill="none">
+                <!-- Green trail -->
+                <path class="trail-line" d="M20,380 C60,340 80,300 100,260 S140,200 130,160 S110,120 120,80" stroke="#2ECC40" stroke-width="3" stroke-linecap="round"/>
+                <!-- Blue trail -->
+                <path class="trail-line-2" d="M30,400 C70,360 100,320 140,280 S170,220 160,180 S150,140 165,100" stroke="#3b82f6" stroke-width="3" stroke-linecap="round"/>
+                <!-- Black trail (dashed) -->
+                <path class="trail-line-3" d="M50,420 C90,380 120,330 160,300 S200,250 190,200 S180,150 200,100" stroke="#9ca3af" stroke-width="2" stroke-linecap="round" stroke-dasharray="6 4"/>
+                <!-- POI dots -->
+                <circle cx="120" cy="80" r="5" fill="#22c55e" class="pulse-dot"/>
+                <circle cx="165" cy="100" r="4" fill="#3b82f6"/>
+                <circle cx="100" cy="260" r="4" fill="#f59e0b"/>
+              </svg>
+
+              <!-- Filter chips -->
+              <div class="absolute top-8 left-0 right-0 flex justify-center gap-2 z-10">
+                <span class="px-3 py-1 rounded-full text-xs font-semibold bg-accent text-black">All</span>
+                <span class="px-3 py-1 rounded-full text-xs font-semibold glass text-gray-300 border border-white/10">Bike</span>
+                <span class="px-3 py-1 rounded-full text-xs font-semibold glass text-gray-300 border border-white/10">Hike</span>
+              </div>
+
+              <!-- Offline badge -->
+              <div class="absolute bottom-16 right-3 glass px-2 py-1 rounded-full text-xs text-green-400 border border-green-500/20">
+                ⬇ Offline
+              </div>
+
+              <!-- Bottom bar -->
+              <div class="absolute bottom-0 left-0 right-0 glass border-t border-white/10 p-3">
+                <div class="flex justify-around">
+                  <span class="text-xs text-accent">🗺 Map</span>
+                  <span class="text-xs text-gray-500">📋 Status</span>
+                  <span class="text-xs text-gray-500">⬛ QR</span>
+                </div>
+              </div>
+            </div>
+          </div>
+        </div>
+      </div>
+    </div>
+  </div>
+
+  <!-- FEATURE 2: TRAIL STATUS -->
+  <div class="feat-card glass rounded-3xl p-8 md:p-12 mb-8 border border-white/5">
+    <div class="flex flex-col md:flex-row-reverse items-center gap-10">
+      <!-- Text -->
+      <div class="flex-1 reveal-right">
+        <div class="inline-flex items-center gap-2 px-3 py-1 rounded-full bg-blue-500/10 text-blue-400 text-xs font-semibold mb-4 border border-blue-500/20">
+          Feature 02
+        </div>
+        <h3 class="text-3xl font-black mb-4">Live Trail Status</h3>
+        <p class="text-gray-400 leading-relaxed mb-6">Every trail shows a real-time status badge. Resort staff update a single JSON file — changes appear in the app on next refresh. No servers, no database, no complexity.</p>
+        <div class="grid grid-cols-2 gap-3">
+          <div class="glass rounded-xl p-3 border border-green-500/20">
+            <span class="w-2 h-2 rounded-full bg-green-400 inline-block mr-1 badge-pulse"></span>
+            <span class="text-xs font-semibold text-green-400">Open</span>
+          </div>
+          <div class="glass rounded-xl p-3 border border-red-500/20">
+            <span class="w-2 h-2 rounded-full bg-red-400 inline-block mr-1"></span>
+            <span class="text-xs font-semibold text-red-400">Closed</span>
+          </div>
+          <div class="glass rounded-xl p-3 border border-yellow-500/20">
+            <span class="w-2 h-2 rounded-full bg-yellow-400 inline-block mr-1"></span>
+            <span class="text-xs font-semibold text-yellow-400">Caution</span>
+          </div>
+          <div class="glass rounded-xl p-3 border border-orange-500/20">
+            <span class="w-2 h-2 rounded-full bg-orange-400 inline-block mr-1"></span>
+            <span class="text-xs font-semibold text-orange-400">Maintenance</span>
+          </div>
+        </div>
+      </div>
+
+      <!-- Phone mockup -->
+      <div class="reveal-left flex justify-center">
+        <div class="float" style="animation-delay: 1s;">
+          <div class="phone">
+            <div class="bg-card w-full h-full pt-8 px-3 overflow-hidden">
+              <!-- Header -->
+              <div class="flex items-center justify-between mb-4">
+                <span class="text-xs font-bold text-white">Today's Status</span>
+                <span class="text-xs text-gray-500">Updated 3m ago</span>
+              </div>
+              <!-- Trail list -->
+              <div class="space-y-2">
+                <div class="glass rounded-xl p-2.5 border border-green-500/20 flex items-center justify-between">
+                  <div>
+                    <div class="text-xs font-semibold text-white">Eagle Ridge</div>
+                    <div class="text-xs text-gray-500">4.2km · Blue</div>
+                  </div>
+                  <span class="px-2 py-0.5 rounded-full bg-green-500/20 text-green-400 text-xs font-bold badge-pulse">Open</span>
+                </div>
+                <div class="glass rounded-xl p-2.5 border border-green-500/20 flex items-center justify-between">
+                  <div>
+                    <div class="text-xs font-semibold text-white">Cedar Flow</div>
+                    <div class="text-xs text-gray-500">2.8km · Green</div>
+                  </div>
+                  <span class="px-2 py-0.5 rounded-full bg-green-500/20 text-green-400 text-xs font-bold">Open</span>
+                </div>
+                <div class="glass rounded-xl p-2.5 border border-yellow-500/20 flex items-center justify-between">
+                  <div>
+                    <div class="text-xs font-semibold text-white">North Drop</div>
+                    <div class="text-xs text-gray-500">1.5km · Black</div>
+                  </div>
+                  <span class="px-2 py-0.5 rounded-full bg-yellow-500/20 text-yellow-400 text-xs font-bold">Caution</span>
+                </div>
+                <div class="glass rounded-xl p-2.5 border border-red-500/20 flex items-center justify-between">
+                  <div>
+                    <div class="text-xs font-semibold text-white">Summit Line</div>
+                    <div class="text-xs text-gray-500">6.1km · Black</div>
+                  </div>
+                  <span class="px-2 py-0.5 rounded-full bg-red-500/20 text-red-400 text-xs font-bold">Closed</span>
+                </div>
+                <div class="glass rounded-xl p-2.5 border border-orange-500/20 flex items-center justify-between">
+                  <div>
+                    <div class="text-xs font-semibold text-white">Lift Trail 1</div>
+                    <div class="text-xs text-gray-500">3.3km · Blue</div>
+                  </div>
+                  <span class="px-2 py-0.5 rounded-full bg-orange-500/20 text-orange-400 text-xs font-bold">Maint.</span>
+                </div>
+              </div>
+
+              <!-- Bottom bar -->
+              <div class="absolute bottom-0 left-0 right-0 glass border-t border-white/10 p-3">
+                <div class="flex justify-around">
+                  <span class="text-xs text-gray-500">🗺 Map</span>
+                  <span class="text-xs text-accent">📋 Status</span>
+                  <span class="text-xs text-gray-500">⬛ QR</span>
+                </div>
+              </div>
+            </div>
+          </div>
+        </div>
+      </div>
+    </div>
+  </div>
+
+  <!-- FEATURE 3: QR LOCATOR -->
+  <div class="feat-card glass rounded-3xl p-8 md:p-12 border border-white/5">
+    <div class="flex flex-col md:flex-row items-center gap-10">
+      <!-- Text -->
+      <div class="flex-1 reveal-left">
+        <div class="inline-flex items-center gap-2 px-3 py-1 rounded-full bg-green-500/10 text-green-400 text-xs font-semibold mb-4 border border-green-500/20">
+          Feature 03
+        </div>
+        <h3 class="text-3xl font-black mb-4">QR Code Location Finder</h3>
+        <p class="text-gray-400 leading-relaxed mb-6">Physical QR signs at every trail junction, lift, and viewpoint. Guests scan → instantly know where they are, what's nearby, and which trail to take next. Works with zero GPS and zero internet.</p>
+        <div class="space-y-3 text-sm text-gray-400">
+          <div class="flex items-start gap-3">
+            <span class="text-green-400 mt-0.5">✓</span>
+            <span>Solves "I'm lost" without draining battery with GPS</span>
+          </div>
+          <div class="flex items-start gap-3">
+            <span class="text-green-400 mt-0.5">✓</span>
+            <span>100% reliable in dead-signal mountain zones</span>
+          </div>
+          <div class="flex items-start gap-3">
+            <span class="text-green-400 mt-0.5">✓</span>
+            <span>Shows nearby trails, POIs, and recommended routes</span>
+          </div>
+        </div>
+      </div>
+
+      <!-- Phone mockup -->
+      <div class="reveal-right flex justify-center">
+        <div class="float" style="animation-delay: 2s;">
+          <div class="phone">
+            <div class="bg-card w-full h-full pt-8 flex flex-col">
+              <!-- Camera view -->
+              <div class="flex-1 relative bg-black overflow-hidden">
+                <!-- Camera grid -->
+                <svg class="absolute inset-0 w-full h-full opacity-20" viewBox="0 0 220 300">
+                  <line x1="73" y1="0" x2="73" y2="300" stroke="white" stroke-width="0.5"/>
+                  <line x1="147" y1="0" x2="147" y2="300" stroke="white" stroke-width="0.5"/>
+                  <line x1="0" y1="100" x2="220" y2="100" stroke="white" stroke-width="0.5"/>
+                  <line x1="0" y1="200" x2="220" y2="200" stroke="white" stroke-width="0.5"/>
+                </svg>
+                <!-- QR code mockup in center -->
+                <div class="absolute inset-0 flex items-center justify-center">
+                  <div class="relative">
+                    <!-- Scan corners -->
+                    <div class="absolute -top-4 -left-4 w-8 h-8 border-t-2 border-l-2 border-green-400"></div>
+                    <div class="absolute -top-4 -right-4 w-8 h-8 border-t-2 border-r-2 border-green-400"></div>
+                    <div class="absolute -bottom-4 -left-4 w-8 h-8 border-b-2 border-l-2 border-green-400"></div>
+                    <div class="absolute -bottom-4 -right-4 w-8 h-8 border-b-2 border-r-2 border-green-400"></div>
+                    <!-- QR pattern -->
+                    <div class="w-20 h-20 bg-white/90 rounded p-1.5 grid grid-cols-5 gap-0.5">
+                      <div class="col-span-2 row-span-2 bg-gray-800 rounded-sm"></div>
+                      <div class="bg-transparent"></div>
+                      <div class="bg-gray-800 rounded-sm"></div>
+                      <div class="bg-transparent"></div>
+                      <div class="bg-transparent"></div>
+                      <div class="bg-gray-800 rounded-sm"></div>
+                      <div class="bg-transparent"></div>
+                      <div class="bg-gray-800 rounded-sm"></div>
+                      <div class="bg-transparent"></div>
+                      <div class="bg-gray-800 rounded-sm"></div>
+                      <div class="bg-gray-800 rounded-sm"></div>
+                      <div class="bg-transparent"></div>
+                      <div class="col-span-2 row-span-2 bg-gray-800 rounded-sm"></div>
+                      <div class="bg-gray-800 rounded-sm"></div>
+                      <div class="bg-transparent"></div>
+                      <div class="bg-gray-800 rounded-sm"></div>
+                    </div>
+                  </div>
+                </div>
+                <!-- Scan line -->
+                <div class="scan-line absolute left-4 right-4 h-0.5 bg-green-400 opacity-70 shadow-lg" style="shadow-color: #22c55e; box-shadow: 0 0 8px #22c55e;"></div>
+                <!-- Scan label -->
+                <div class="absolute bottom-3 left-0 right-0 text-center text-xs text-green-400 font-medium">Scanning...</div>
+              </div>
+
+              <!-- Result sheet (peek) -->
+              <div class="bg-surface border-t border-white/10 p-3">
+                <div class="flex items-center gap-2 mb-2">
+                  <span class="pin-drop text-base">📍</span>
+                  <span class="text-xs font-bold text-white">Eagle Ridge Junction</span>
+                </div>
+                <div class="flex gap-2">
+                  <span class="px-2 py-0.5 rounded-full bg-green-500/20 text-green-400 text-xs">Eagle Ridge ↑</span>
+                  <span class="px-2 py-0.5 rounded-full bg-blue-500/20 text-blue-400 text-xs">Cedar Flow →</span>
+                </div>
+              </div>
+
+              <!-- Bottom bar -->
+              <div class="glass border-t border-white/10 p-3">
+                <div class="flex justify-around">
+                  <span class="text-xs text-gray-500">🗺 Map</span>
+                  <span class="text-xs text-gray-500">📋 Status</span>
+                  <span class="text-xs text-accent">⬛ QR</span>
+                </div>
+              </div>
+            </div>
+          </div>
+        </div>
+      </div>
+    </div>
+  </div>
+</section>
+
+<!-- COMING SOON -->
+<section id="coming-soon" class="py-32 px-6 relative overflow-hidden">
+  <div class="absolute inset-0 bg-gradient-to-b from-transparent via-blue-950/10 to-transparent pointer-events-none"></div>
+  <div class="max-w-6xl mx-auto relative">
+    <div class="text-center mb-16">
+      <div class="reveal inline-flex items-center gap-2 px-3 py-1 rounded-full glass text-xs text-blue-400 font-medium mb-4 border border-blue-500/20">
+        What's Next
+      </div>
+      <h2 class="reveal delay-1 text-4xl md:text-5xl font-black mb-4">Built to <span class="grad-text">grow with you.</span></h2>
+      <p class="reveal delay-2 text-gray-400 max-w-xl mx-auto">The MVP architecture is designed so future features plug in without restructuring the core app.</p>
+    </div>
+
+    <div class="grid grid-cols-1 sm:grid-cols-2 lg:grid-cols-3 gap-4">
+
+      <div class="soon-card reveal delay-1 glass-strong rounded-2xl p-6 border border-white/5">
+        <div class="w-10 h-10 rounded-xl bg-blue-500/15 flex items-center justify-center text-xl mb-4">📍</div>
+        <h4 class="font-bold text-white mb-2">GPS Live Tracking</h4>
+        <p class="text-sm text-gray-500">Track your run or ride in real-time. See vertical descent, top speed, and route on the map as you go.</p>
+      </div>
+
+      <div class="soon-card reveal delay-2 glass-strong rounded-2xl p-6 border border-white/5">
+        <div class="w-10 h-10 rounded-xl bg-red-500/15 flex items-center justify-center text-xl mb-4">🎬</div>
+        <h4 class="font-bold text-white mb-2">Video Trail Guides</h4>
+        <p class="text-sm text-gray-500">POV helmet-cam previews for every trail. Know what you're getting into before you drop in.</p>
+      </div>
+
+      <div class="soon-card reveal delay-3 glass-strong rounded-2xl p-6 border border-white/5">
+        <div class="w-10 h-10 rounded-xl bg-green-500/15 flex items-center justify-center text-xl mb-4">👥</div>
+        <h4 class="font-bold text-white mb-2">Find Friends on Mountain</h4>
+        <p class="text-sm text-gray-500">See where your group is on the map in real-time. Meet at the lift, never lose each other.</p>
+      </div>
+
+      <div class="soon-card reveal delay-1 glass-strong rounded-2xl p-6 border border-white/5">
+        <div class="w-10 h-10 rounded-xl bg-yellow-500/15 flex items-center justify-center text-xl mb-4">🔔</div>
+        <h4 class="font-bold text-white mb-2">Push Notifications</h4>
+        <p class="text-sm text-gray-500">Get alerted when your favourite trail reopens or when weather conditions change.</p>
+      </div>
+
+      <div class="soon-card reveal delay-2 glass-strong rounded-2xl p-6 border border-white/5">
+        <div class="w-10 h-10 rounded-xl bg-purple-500/15 flex items-center justify-center text-xl mb-4">🎫</div>
+        <h4 class="font-bold text-white mb-2">Lift Ticket & Rental Booking</h4>
+        <p class="text-sm text-gray-500">Buy lift passes, rent bikes, helmets, and gear — all inside the app before you even arrive.</p>
+      </div>
+
+      <div class="soon-card reveal delay-3 glass-strong rounded-2xl p-6 border border-white/5">
+        <div class="w-10 h-10 rounded-xl bg-orange-500/15 flex items-center justify-center text-xl mb-4">🏆</div>
+        <h4 class="font-bold text-white mb-2">Activity & Achievements</h4>
+        <p class="text-sm text-gray-500">Earn badges, track your progression matrix, and compete on the mountain leaderboard.</p>
+      </div>
+
+    </div>
+  </div>
+</section>
+
+<!-- TECH & COST -->
+<section id="tech" class="py-32 px-6">
+  <div class="max-w-6xl mx-auto">
+    <div class="text-center mb-16">
+      <div class="reveal inline-flex items-center gap-2 px-3 py-1 rounded-full glass text-xs text-green-400 font-medium mb-4 border border-green-500/20">
+        Tech Stack
+      </div>
+      <h2 class="reveal delay-1 text-4xl md:text-5xl font-black mb-4">Lean stack.<br/><span class="grad-text">Zero backend costs.</span></h2>
+      <p class="reveal delay-2 text-gray-400 max-w-xl mx-auto">Guests never hit a server. Trail data lives on a CDN. Staff update one JSON file.</p>
+    </div>
+
+    <div class="grid grid-cols-1 lg:grid-cols-2 gap-8">
+
+      <!-- Stack table -->
+      <div class="reveal-left glass rounded-2xl overflow-hidden border border-white/5">
+        <div class="p-5 border-b border-white/5">
+          <h3 class="font-bold text-white text-sm">Technology Stack</h3>
+        </div>
+        <div class="divide-y divide-white/5">
+          <div class="flex items-center justify-between px-5 py-3">
+            <span class="text-sm text-gray-400">Mobile App</span>
+            <span class="text-sm font-semibold text-white">Expo + React Native</span>
+          </div>
+          <div class="flex items-center justify-between px-5 py-3">
+            <span class="text-sm text-gray-400">Maps</span>
+            <span class="text-sm font-semibold text-white">Mapbox GL Native</span>
+          </div>
+          <div class="flex items-center justify-between px-5 py-3">
+            <span class="text-sm text-gray-400">Data Source</span>
+            <span class="text-sm font-semibold text-white">Static JSON on CDN</span>
+          </div>
+          <div class="flex items-center justify-between px-5 py-3">
+            <span class="text-sm text-gray-400">Offline Storage</span>
+            <span class="text-sm font-semibold text-white">SQLite + Mapbox Packs</span>
+          </div>
+          <div class="flex items-center justify-between px-5 py-3">
+            <span class="text-sm text-gray-400">QR Scanning</span>
+            <span class="text-sm font-semibold text-white">Expo Camera</span>
+          </div>
+          <div class="flex items-center justify-between px-5 py-3">
+            <span class="text-sm text-gray-400">State Management</span>
+            <span class="text-sm font-semibold text-white">Zustand</span>
+          </div>
+          <div class="flex items-center justify-between px-5 py-3">
+            <span class="text-sm text-gray-400">Hosting</span>
+            <span class="text-sm font-semibold text-white">GitHub Pages (free)</span>
+          </div>
+        </div>
+      </div>
+
+      <!-- Cost breakdown -->
+      <div class="reveal-right glass rounded-2xl overflow-hidden border border-white/5">
+        <div class="p-5 border-b border-white/5">
+          <h3 class="font-bold text-white text-sm">Annual Cost Breakdown</h3>
+        </div>
+        <div class="divide-y divide-white/5">
+          <div class="flex items-center justify-between px-5 py-3">
+            <div>
+              <div class="text-sm text-white">Mapbox</div>
+              <div class="text-xs text-gray-500">50k tile loads/month free</div>
+            </div>
+            <span class="text-sm font-bold text-green-400">$0</span>
+          </div>
+          <div class="flex items-center justify-between px-5 py-3">
+            <div>
+              <div class="text-sm text-white">GitHub + CDN</div>
+              <div class="text-xs text-gray-500">Data hosting & source control</div>
+            </div>
+            <span class="text-sm font-bold text-green-400">$0</span>
+          </div>
+          <div class="flex items-center justify-between px-5 py-3">
+            <div>
+              <div class="text-sm text-white">Backend / Servers</div>
+              <div class="text-xs text-gray-500">Not needed — static architecture</div>
+            </div>
+            <span class="text-sm font-bold text-green-400">$0</span>
+          </div>
+          <div class="flex items-center justify-between px-5 py-3">
+            <div>
+              <div class="text-sm text-white">Apple Developer</div>
+              <div class="text-xs text-gray-500">iOS App Store submission</div>
+            </div>
+            <span class="text-sm font-semibold text-white">$99/yr</span>
+          </div>
+          <div class="flex items-center justify-between px-5 py-3">
+            <div>
+              <div class="text-sm text-white">Google Play</div>
+              <div class="text-xs text-gray-500">Android submission (one-time)</div>
+            </div>
+            <span class="text-sm font-semibold text-white">$25</span>
+          </div>
+          <div class="flex items-center justify-between px-5 py-4 bg-green-500/5">
+            <span class="text-sm font-bold text-white">Total Year 1</span>
+            <span class="text-lg font-black text-green-400">$124</span>
+          </div>
+        </div>
+      </div>
+
+    </div>
+  </div>
+</section>
+
+<!-- CTA -->
+<section id="contact" class="py-32 px-6">
+  <div class="max-w-2xl mx-auto text-center">
+    <div class="reveal glass-strong rounded-3xl p-12 border border-white/8 glow-green">
+      <div class="w-16 h-16 rounded-2xl bg-gradient-to-br from-accent to-blue-500 flex items-center justify-center mx-auto mb-6">
+        <svg width="28" height="28" viewBox="0 0 24 24" fill="none" stroke="white" stroke-width="2.5"><path d="M22 16.92v3a2 2 0 0 1-2.18 2 19.79 19.79 0 0 1-8.63-3.07A19.5 19.5 0 0 1 4.69 9.5a19.79 19.79 0 0 1-3.07-8.67A2 2 0 0 1 3.6 0.83h3a2 2 0 0 1 2 1.72c.127.96.361 1.903.7 2.81a2 2 0 0 1-.45 2.11L7.91 8.37a16 16 0 0 0 5.72 5.72l.95-.95a2 2 0 0 1 2.11-.45c.907.339 1.85.573 2.81.7A2 2 0 0 1 22 16.92z"/></svg>
+      </div>
+      <h2 class="text-4xl font-black mb-4">Let's build it.</h2>
+      <p class="text-gray-400 mb-8 leading-relaxed">Ready to bring Mzaar into every guest's pocket? The MVP is scoped, the architecture is solid, and the timeline is clear.</p>
+      <div class="flex flex-col sm:flex-row items-center justify-center gap-4">
+        <a href="mailto:hello@mzaar.app" class="px-8 py-3 rounded-full bg-accent text-black font-bold text-sm hover:bg-green-400 transition-all hover:scale-105 active:scale-95">
+          hello@mzaar.app
+        </a>
+        <span class="text-gray-600 text-sm">or</span>
+        <a href="#features" class="px-8 py-3 rounded-full glass text-white font-semibold text-sm hover:bg-white/10 transition-all border border-white/10">
+          Review Features Again
+        </a>
+      </div>
+    </div>
+  </div>
+</section>
+
+<!-- FOOTER -->
+<footer class="border-t border-white/5 py-8 px-6 text-center">
+  <div class="flex items-center justify-center gap-2 mb-2">
+    <div class="w-5 h-5 rounded-md bg-gradient-to-br from-accent to-blue-500 flex items-center justify-center">
+      <svg width="10" height="10" viewBox="0 0 24 24" fill="none" stroke="white" stroke-width="2.5"><circle cx="12" cy="12" r="10"/></svg>
+    </div>
+    <span class="font-bold text-sm">MZAAR</span>
+  </div>
+  <p class="text-xs text-gray-600">Mountain Resort App — Investor Demo © 2026</p>
+</footer>
+
+<script>
+  // Intersection Observer for scroll animations
+  const observer = new IntersectionObserver((entries) => {
+    entries.forEach(entry => {
+      if (entry.isIntersecting) {
+        entry.target.classList.add('visible');
+      }
+    });
+  }, { threshold: 0.1, rootMargin: '0px 0px -60px 0px' });
+
+  document.querySelectorAll('.reveal, .reveal-left, .reveal-right').forEach(el => {
+    observer.observe(el);
+  });
+</script>
+</body>
+</html>
